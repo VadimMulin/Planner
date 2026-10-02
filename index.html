@@ -29,6 +29,7 @@
   --accent-soft:#E2E8FB;
   --on-accent:#FFFFFF;
   --done:#8CA597;
+  --ok:#2E8B57;
   --warn:#B93E0B;
   --warn-soft:#FBE9E1;
   --p1:#2C55DD;
@@ -51,6 +52,7 @@
     --accent-soft:#222F4D;
     --on-accent:#0B1220;
     --done:#5D7A6B;
+    --ok:#4DB97F;
     --warn:#FF8F63;
     --warn-soft:#3A2420;
     --p1:#7197FF;
@@ -75,7 +77,7 @@ body{
   padding:
     calc(clamp(20px,6vw,64px) + env(safe-area-inset-top))
     max(16px,env(safe-area-inset-right))
-    calc(110px + env(safe-area-inset-bottom))
+    calc(130px + env(safe-area-inset-bottom))
     max(16px,env(safe-area-inset-left));
 }
 main{max-width:660px;margin:0 auto}
@@ -100,7 +102,7 @@ h1 .wd{display:block;color:var(--muted);font-weight:500;letter-spacing:-0.01em}
 
 /* общее */
 .sheet{background:var(--paper);border:1px solid var(--line);border-radius:14px}
-input[type=text],input[type=date],input[type=time],select,textarea{
+input[type=text],input[type=date],input[type=time],input[type=password],select,textarea{
   font:inherit;color:inherit;
   border:1px solid var(--line);
   border-radius:10px;
@@ -117,6 +119,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
   border-color:var(--accent);
 }
 button{font:inherit;color:inherit;cursor:pointer}
+button:disabled{opacity:.55;cursor:default}
 .primary{
   border:0;border-radius:10px;
   background:var(--accent);color:var(--on-accent);
@@ -132,6 +135,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .secondary.sm{padding:6px 12px;font-size:.92rem}
 .linkbtn{background:none;border:0;color:var(--muted);padding:6px 0;font-size:.95rem;text-decoration:underline;text-underline-offset:3px}
 .linkbtn:hover{color:var(--ink)}
+a.linkbtn{display:inline-block}
 .icon-btn{
   width:34px;height:34px;flex:none;
   border:0;border-radius:10px;background:none;color:var(--muted);
@@ -175,7 +179,17 @@ button{font:inherit;color:inherit;cursor:pointer}
   margin-top:10px;padding-top:12px;border-top:1px solid var(--line);
 }
 
-/* панель фильтров */
+/* секции */
+.sec-title{
+  display:flex;align-items:baseline;gap:8px;
+  margin:22px 4px 8px;font-size:1.02rem;font-weight:600;
+}
+.view>.sec-title:first-child{margin-top:0}
+.sec-title .cnt{color:var(--muted);font-weight:400;font-size:.92rem}
+.sec-title.over{color:var(--warn)}
+.sec-title.over .cnt{color:var(--warn)}
+
+/* вкладки всех задач */
 .bar-row{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
   margin-bottom:8px;padding:0 4px;
@@ -188,19 +202,19 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tab .n{margin-left:5px;font-weight:400}
 .tab[aria-pressed=true]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
 .tab:hover{color:var(--ink)}
-.tools{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px;padding:0 4px}
-.tools{align-items:center}
+.tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px;padding:0 4px}
 .tools select{padding:6px 10px;font-size:.92rem;color:var(--muted)}
 .tools #clear{margin-left:auto;white-space:nowrap}
 
 /* список */
-#list{list-style:none;margin:0;padding:0;--indent:46px}
+#list,.task-list{list-style:none;margin:0;padding:0;--indent:46px}
 #list.manual{--indent:68px}
 .task{
   position:relative;
   padding:12px 8px 12px 14px;
   border-bottom:1px solid var(--line);
   background:var(--paper);
+  touch-action:pan-y;
 }
 .task:first-child{border-radius:14px 14px 0 0}
 .task:last-child{border-bottom:0;border-radius:0 0 14px 14px}
@@ -208,7 +222,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .task.p1{box-shadow:inset 3px 0 0 var(--p1)}
 .task.p2{box-shadow:inset 3px 0 0 var(--p2)}
 .task.p3{box-shadow:inset 3px 0 0 var(--p3)}
-.row{display:flex;align-items:flex-start;gap:10px}
+.row{position:relative;z-index:1;display:flex;align-items:flex-start;gap:10px;background:var(--paper)}
 .handle{
   flex:none;width:22px;height:30px;margin:0 -4px 0 -6px;padding:0;
   border:0;background:none;color:var(--muted);cursor:grab;
@@ -261,6 +275,19 @@ button{font:inherit;color:inherit;cursor:pointer}
 .task.done .meta{opacity:.7}
 .actions{display:flex;flex:none;margin:-2px 0}
 
+/* свайпы */
+.task.swiping{overflow:hidden}
+.swipe-bg{
+  position:absolute;inset:0;z-index:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;font-weight:600;color:var(--on-accent);
+  background:var(--line);
+}
+.swipe-bg[data-dir=r]{background:var(--ok)}
+.swipe-bg[data-dir=l]{background:var(--p3)}
+.swipe-bg[data-dir=r] .sw-r,.swipe-bg[data-dir=l] .sw-l{display:none}
+.swipe-bg:not(.armed) span{opacity:.75}
+
 /* подробности */
 .details{margin:10px 6px 4px var(--indent);display:flex;flex-direction:column;gap:10px}
 .subs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
@@ -268,6 +295,8 @@ button{font:inherit;color:inherit;cursor:pointer}
 .sub-text{flex:1;min-width:0;overflow-wrap:anywhere;font-size:.95rem;padding-top:1px}
 .sub.done .sub-text{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--done)}
 .sub-new{font-size:.95rem;padding:8px 12px}
+.tpl-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px}
+.tpl-row select{flex:1 1 180px;font-size:.92rem;padding:7px 10px;color:var(--muted)}
 
 /* редактирование */
 .task.editing{background:var(--edit-bg)}
@@ -288,9 +317,63 @@ button{font:inherit;color:inherit;cursor:pointer}
   cursor:grabbing;
 }
 
-/* уведомление-подсказка */
+/* неделя */
+.weekbar{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px}
+.weekbar .range{font-weight:600}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:8px}
+.day{
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+  padding:8px 0 6px;min-width:0;
+  border:1px solid var(--line);border-radius:12px;background:var(--paper);
+}
+.day .dn{font-size:.78rem;color:var(--muted)}
+.day .dd{font-size:1.1rem;font-weight:600}
+.day .dc{font-size:.72rem;height:14px;line-height:14px;color:var(--accent);font-weight:600}
+.day.today{border-color:var(--accent)}
+.day[aria-pressed=true]{background:var(--accent);border-color:var(--accent)}
+.day[aria-pressed=true] .dn,.day[aria-pressed=true] .dd,.day[aria-pressed=true] .dc{color:var(--on-accent)}
+.back-row{margin:0 4px}
+
+/* итоги */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+.stat{padding:14px 16px}
+.stat .v{font-size:2rem;font-weight:700;letter-spacing:-0.02em;line-height:1.1}
+.stat .l{color:var(--ink);font-size:.92rem;margin-top:2px}
+.stat .d{font-size:.82rem;color:var(--muted)}
+.chart{display:flex;align-items:flex-end;gap:5px;padding:16px 12px 12px}
+.bar-col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px}
+.bar-col .n{font-size:.72rem;color:var(--muted);height:14px;line-height:14px}
+.bar-col .b{width:100%;max-width:26px;background:var(--accent);border-radius:5px 5px 2px 2px}
+.bar-col .b.zero{background:var(--line)}
+.bar-col .w{font-size:.72rem;color:var(--muted)}
+.bar-col.today .w{color:var(--accent);font-weight:600}
+.chart-note{padding:0 16px 14px}
+
+/* нижняя навигация */
+#nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:10;
+  background:var(--paper);border-top:1px solid var(--line);
+  padding:0 max(8px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(8px,env(safe-area-inset-left));
+}
+.nav-in{max-width:660px;margin:0 auto;display:flex}
+.nav-btn{
+  position:relative;flex:1;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:9px 4px 8px;background:none;border:0;
+  color:var(--muted);font-size:.74rem;font-weight:500;
+}
+.nav-btn[aria-current=page]{color:var(--accent)}
+.nav-btn svg{display:block}
+.nav-btn .badge{
+  position:absolute;top:3px;left:calc(50% + 6px);
+  min-width:17px;height:17px;padding:0 5px;border-radius:9px;
+  background:var(--warn);color:var(--on-accent);
+  font-size:.68rem;font-weight:700;line-height:17px;text-align:center;
+}
+
+/* сообщение */
 .toast{
-  position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  position:fixed;left:50%;bottom:calc(78px + env(safe-area-inset-bottom));transform:translateX(-50%);
   display:flex;align-items:center;gap:16px;
   background:var(--toast-bg);color:var(--toast-fg);
   padding:12px 12px 12px 18px;border-radius:12px;
@@ -318,8 +401,12 @@ dialog section{padding:16px 0;border-top:1px solid var(--line);display:flex;flex
 dialog section:first-of-type{border-top:0}
 dialog h3{font-size:1.02rem;font-weight:600}
 .check-row{display:flex;align-items:center;gap:10px;cursor:pointer}
-.row-btns{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.row-btns{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
 .status{color:var(--muted);font-size:.92rem}
+.status.err{color:var(--warn)}
+.tpl-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:2px 0}
+.tpl-item span{min-width:0;overflow-wrap:anywhere}
+#add-link{width:100%;font-size:.9rem}
 
 @media (max-width:480px){
   body{font-size:16px}
@@ -360,31 +447,47 @@ dialog h3{font-size:1.02rem;font-weight:600}
       <label class="field"><span>Приоритет</span><select id="new-prio"></select></label>
       <label class="field"><span>Повтор</span><select id="new-repeat"></select></label>
       <label class="field"><span>Категория</span><input type="text" id="new-cat" list="cats" maxlength="30" placeholder="работа"></label>
+      <label class="field"><span>Шаблон подзадач</span><select id="new-tpl"></select></label>
     </div>
     <datalist id="cats"></datalist>
   </form>
 
-  <div class="bar-row">
-    <div class="tabs" role="group" aria-label="Фильтр задач">
-      <button type="button" class="tab" data-filter="all" aria-pressed="true">Все<span class="n">0</span></button>
-      <button type="button" class="tab" data-filter="active" aria-pressed="false">Активные<span class="n">0</span></button>
-      <button type="button" class="tab" data-filter="done" aria-pressed="false">Выполненные<span class="n">0</span></button>
-    </div>
-  </div>
-  <div class="tools">
-    <select id="cat-filter" aria-label="Категория" hidden></select>
-    <select id="sort" aria-label="Порядок задач">
-      <option value="manual">Порядок: вручную</option>
-      <option value="due">Порядок: по сроку</option>
-      <option value="priority">Порядок: по приоритету</option>
-    </select>
-    <button type="button" class="linkbtn" id="clear" hidden>Удалить выполненные</button>
-  </div>
+  <section class="view" id="view-today"></section>
 
-  <div class="sheet">
-    <ul id="list"></ul>
-  </div>
+  <section class="view" id="view-all" hidden>
+    <div class="bar-row">
+      <div class="tabs" role="group" aria-label="Фильтр задач">
+        <button type="button" class="tab" data-filter="all" aria-pressed="true">Все<span class="n">0</span></button>
+        <button type="button" class="tab" data-filter="active" aria-pressed="false">Активные<span class="n">0</span></button>
+        <button type="button" class="tab" data-filter="done" aria-pressed="false">Выполненные<span class="n">0</span></button>
+      </div>
+    </div>
+    <div class="tools">
+      <select id="cat-filter" aria-label="Категория" hidden></select>
+      <select id="sort" aria-label="Порядок задач">
+        <option value="manual">Порядок: вручную</option>
+        <option value="due">Порядок: по сроку</option>
+        <option value="priority">Порядок: по приоритету</option>
+      </select>
+      <button type="button" class="linkbtn" id="clear" hidden>Удалить выполненные</button>
+    </div>
+    <div class="sheet">
+      <ul id="list"></ul>
+    </div>
+  </section>
+
+  <section class="view" id="view-week" hidden></section>
+  <section class="view" id="view-stats" hidden></section>
 </main>
+
+<nav id="nav" aria-label="Разделы">
+  <div class="nav-in">
+    <button type="button" class="nav-btn" data-view="today"><span class="ico"></span><span>Сегодня</span><span class="badge" hidden></span></button>
+    <button type="button" class="nav-btn" data-view="all"><span class="ico"></span><span>Все</span></button>
+    <button type="button" class="nav-btn" data-view="week"><span class="ico"></span><span>Неделя</span></button>
+    <button type="button" class="nav-btn" data-view="stats"><span class="ico"></span><span>Итоги</span></button>
+  </div>
+</nav>
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden>
   <span id="toast-text"></span>
@@ -401,16 +504,50 @@ dialog h3{font-size:1.02rem;font-weight:600}
     <h3>Напоминания</h3>
     <label class="check-row"><input type="checkbox" class="check sm" id="set-reminders"><span>Напоминать о сроках</span></label>
     <label class="field"><span>Время для задач без времени (пусто: не напоминать)</span><input type="time" id="set-default-time"></label>
+    <label class="check-row"><input type="checkbox" class="check sm" id="set-badge"><span>Число задач на иконке приложения</span></label>
     <div class="row-btns">
       <button type="button" class="secondary" id="notif-btn">Разрешить уведомления</button>
       <span class="status" id="notif-status"></span>
     </div>
-    <p class="hint">Уведомления приходят, пока приложение открыто или свёрнуто. Для напоминаний при полностью закрытом приложении нужен отдельный сервер уведомлений. На iPhone уведомления работают после установки на экран «Домой».</p>
+    <p class="hint">Уведомления и число на иконке обновляются, пока приложение открыто или свёрнуто. Для напоминаний при полностью закрытом приложении нужен отдельный сервер уведомлений. На iPhone это работает после установки на экран «Домой» и разрешения уведомлений.</p>
+  </section>
+
+  <section>
+    <h3>Синхронизация между устройствами</h3>
+    <div id="sync-off">
+      <label class="field"><span>Токен GitHub с правом gist</span><input type="password" id="sync-token" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="ghp_…"></label>
+      <div class="row-btns">
+        <button type="button" class="secondary" id="sync-connect">Подключить</button>
+        <a class="linkbtn" href="https://github.com/settings/tokens/new?scopes=gist&amp;description=Planner" target="_blank" rel="noopener">Создать токен на GitHub</a>
+      </div>
+    </div>
+    <div id="sync-on" hidden>
+      <p class="status" id="sync-status"></p>
+      <div class="row-btns">
+        <button type="button" class="secondary" id="sync-now">Синхронизировать</button>
+        <button type="button" class="secondary" id="sync-disconnect">Отключить</button>
+      </div>
+    </div>
+    <p class="hint">Задачи хранятся в вашем секретном gist на GitHub: его не видно в поиске, но по прямой ссылке его может открыть любой, у кого она есть. При создании токена выберите срок «No expiration», иначе синхронизация остановится, когда токен истечёт. Токен хранится только в этом браузере. На другом устройстве введите тот же токен.</p>
+  </section>
+
+  <section>
+    <h3>Шаблоны подзадач</h3>
+    <div id="tpl-list"></div>
+    <p class="hint">Новый шаблон можно сохранить из подробностей задачи, когда в ней есть подзадачи.</p>
+  </section>
+
+  <section>
+    <h3>Быстрое добавление</h3>
+    <p class="hint">Ссылка, которая добавляет задачу сразу при открытии. Текст разбирается так же, как в поле ввода.</p>
+    <input type="text" id="add-link" readonly aria-label="Ссылка для быстрого добавления">
+    <div class="row-btns"><button type="button" class="secondary" id="copy-link">Скопировать ссылку</button></div>
+    <p class="hint">Для iPhone: в приложении «Команды» создайте команду из действий «Запросить ввод», «Кодировать URL» и «Открыть URL». В «Открыть URL» подставьте эту ссылку и закодированный текст. Команду можно вынести на экран «Домой» или в Пункт управления. Ссылка открывается в Safari, а у Safari и иконки «Домой» отдельные данные, поэтому включите синхронизацию, чтобы всё собиралось в одном списке.</p>
   </section>
 
   <section>
     <h3>Резервная копия</h3>
-    <p class="hint">Задачи хранятся только в этом браузере. Скачайте копию, чтобы перенести их на другое устройство.</p>
+    <p class="hint">Скачайте копию, чтобы перенести задачи вручную или сохранить на всякий случай.</p>
     <div class="row-btns">
       <button type="button" class="secondary" id="export-btn">Скачать копию</button>
       <button type="button" class="secondary" id="import-btn">Загрузить из файла</button>
@@ -598,16 +735,72 @@ dialog h3{font-size:1.02rem;font-weight:600}
   }
   // </parser>
 
+  // <sync-core>
+  function posSort(x, y) {
+    return (x.pos || 0) - (y.pos || 0) || (x.id < y.id ? -1 : x.id > y.id ? 1 : 0);
+  }
+
+  function sortedObj(o) {
+    const r = {};
+    Object.keys(o || {}).sort().forEach((k) => { r[k] = o[k]; });
+    return r;
+  }
+
+  // Слияние двух копий данных: побеждает более свежее изменение задачи,
+  // удаления помнятся метками, выполненные дела объединяются.
+  function mergeSync(a, b) {
+    const deleted = {};
+    [a.deleted, b.deleted].forEach((d) => {
+      Object.keys(d || {}).forEach((k) => { deleted[k] = Math.max(deleted[k] || 0, d[k]); });
+    });
+    const map = new Map();
+    a.tasks.concat(b.tasks).forEach((t) => {
+      const c = map.get(t.id);
+      if (!c || t.updated > c.updated) map.set(t.id, t);
+    });
+    const tasks = [...map.values()].filter((t) => !(deleted[t.id] >= t.updated));
+    tasks.sort(posSort);
+    const log = Object.assign({}, a.log, b.log);
+    const useB = !!b.templates && (b.templatesUpdated || 0) > (a.templatesUpdated || 0);
+    return {
+      tasks,
+      deleted,
+      log,
+      templates: useB ? b.templates : (a.templates || b.templates || []),
+      templatesUpdated: Math.max(a.templatesUpdated || 0, b.templatesUpdated || 0)
+    };
+  }
+
+  function serializeData(d) {
+    return JSON.stringify({
+      v: 3,
+      tasks: d.tasks,
+      deleted: sortedObj(d.deleted),
+      log: sortedObj(d.log),
+      templates: d.templates || [],
+      templatesUpdated: d.templatesUpdated || 0
+    });
+  }
+  // </sync-core>
+
   // ---------- данные ----------
   const KEY = 'planner.v2';
   const OLD_KEY = 'planner.tasks.v1';
+  const SYNC_FILE = 'planner-sync.json';
   const PRIORITIES = ['Без приоритета', 'Низкий', 'Средний', 'Высокий'];
   const REPEATS = [['', 'Не повторять'], ['daily', 'Каждый день'], ['weekdays', 'По будням'], ['weekly', 'Каждую неделю'], ['monthly', 'Каждый месяц']];
   const REPEAT_SHORT = { daily: 'каждый день', weekdays: 'по будням', weekly: 'каждую неделю', monthly: 'каждый месяц' };
+  const VIEWS = ['today', 'all', 'week', 'stats'];
+  const DEFAULT_TEMPLATES = [
+    { id: 'tpl-trip', name: 'Сборы в поездку', items: ['Документы и билеты', 'Зарядки и павербанк', 'Одежда по погоде', 'Аптечка', 'Деньги и карты'] },
+    { id: 'tpl-clean', name: 'Уборка дома', items: ['Пропылесосить', 'Протереть пыль', 'Помыть полы', 'Вынести мусор'] },
+    { id: 'tpl-meet', name: 'Подготовка к встрече', items: ['Уточнить цель', 'Подготовить материалы', 'Отправить повестку'] }
+  ];
 
   let memory = null; // запасной вариант, если localStorage недоступен
 
   const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 
   function norm(t) {
     if (!t || typeof t.text !== 'string' || !t.text.trim()) return null;
@@ -629,9 +822,24 @@ dialog h3{font-size:1.02rem;font-weight:600}
               : null))
             .filter(Boolean)
         : [],
-      done: !!t.done
+      done: !!t.done,
+      doneAt: num(t.doneAt),
+      pos: num(t.pos),
+      updated: num(t.updated) || 0
     };
   }
+
+  function normTpl(x) {
+    if (!x || typeof x.name !== 'string' || !x.name.trim() || !Array.isArray(x.items)) return null;
+    const items = x.items.filter((s) => typeof s === 'string' && s.trim()).map((s) => s.trim().slice(0, 300)).slice(0, 50);
+    return { id: String(x.id || newId()), name: x.name.trim().slice(0, 60), items };
+  }
+
+  const objNums = (o) => {
+    const r = {};
+    if (o && typeof o === 'object') Object.keys(o).forEach((k) => { if (typeof o[k] === 'number') r[k] = o[k]; });
+    return r;
+  };
 
   function loadState() {
     let raw = null;
@@ -643,33 +851,88 @@ dialog h3{font-size:1.02rem;font-weight:600}
       try { old = JSON.parse(localStorage.getItem(OLD_KEY) || 'null'); } catch (e) { old = null; }
       st = { tasks: Array.isArray(old) ? old : [] };
     }
-    const month = 30 * 24 * 3600 * 1000;
+    const tasks = (Array.isArray(st.tasks) ? st.tasks : []).map(norm).filter(Boolean);
+    let maxPos = 0;
+    tasks.forEach((t) => { if (t.pos != null && t.pos > maxPos) maxPos = t.pos; });
+    const now = Date.now();
+    tasks.forEach((t) => {
+      if (t.pos == null) t.pos = ++maxPos;
+      if (!t.updated) t.updated = now;
+    });
+    tasks.sort(posSort);
     const notified = {};
-    Object.entries(st.notified || {}).forEach(([k, v]) => { if (Date.now() - v < month) notified[k] = v; });
+    Object.entries(st.notified || {}).forEach(([k, v]) => { if (now - v < 30 * 864e5) notified[k] = v; });
+    const templates = Array.isArray(st.templates)
+      ? st.templates.map(normTpl).filter(Boolean)
+      : DEFAULT_TEMPLATES.map((x) => ({ id: x.id, name: x.name, items: x.items.slice() }));
     return {
-      tasks: (Array.isArray(st.tasks) ? st.tasks : []).map(norm).filter(Boolean),
-      settings: Object.assign({ reminders: true, defaultTime: '09:00', sort: 'manual' }, st.settings || {}),
+      tasks,
+      deleted: objNums(st.deleted),
+      log: objNums(st.log),
+      templates,
+      templatesUpdated: num(st.templatesUpdated) || 0,
+      settings: Object.assign({ reminders: true, defaultTime: '09:00', sort: 'manual', view: 'today', badge: true }, st.settings || {}),
+      sync: Object.assign({ token: '', gistId: '', last: 0 }, st.sync || {}),
       notified
     };
   }
 
   const S = loadState();
 
-  function persist() {
+  function prune() {
+    const now = Date.now();
+    Object.keys(S.deleted).forEach((k) => { if (now - S.deleted[k] > 60 * 864e5) delete S.deleted[k]; });
+    const cutoff = ymd(addDays(new Date(), -400));
+    Object.keys(S.log).forEach((k) => {
+      const d = k.split('@')[1];
+      if (!d || d < cutoff) delete S.log[k];
+    });
+  }
+
+  function persistLocal() {
     const raw = JSON.stringify(S);
     try { localStorage.setItem(KEY, raw); } catch (e) { memory = raw; }
   }
+  function persist() {
+    persistLocal();
+    scheduleSync();
+  }
 
-  const snapshot = () => JSON.stringify(S.tasks);
+  const touch = (t) => { t.updated = Date.now(); };
+  const sortTasks = () => { S.tasks.sort(posSort); };
+  const nextPos = () => S.tasks.reduce((m, t) => Math.max(m, t.pos || 0), 0) + 1;
+
+  function renormalize() {
+    sortTasks();
+    S.tasks.forEach((t, i) => { t.pos = i + 1; touch(t); });
+  }
+
+  const snapshot = () => JSON.stringify({ tasks: S.tasks, log: S.log });
   function restore(snap) {
-    S.tasks = JSON.parse(snap).map(norm).filter(Boolean);
+    const data = JSON.parse(snap);
+    const now = Date.now();
+    const old = new Map(S.tasks.map((t) => [t.id, t]));
+    const strip = (t) => JSON.stringify(Object.assign({}, t, { updated: 0 }));
+    const restored = data.tasks.map(norm).filter(Boolean);
+    const ids = new Set(restored.map((t) => t.id));
+    S.tasks.forEach((t) => { if (!ids.has(t.id)) S.deleted[t.id] = now; });
+    restored.forEach((t) => {
+      const cur = old.get(t.id);
+      if (!cur || strip(cur) !== strip(t)) t.updated = now;
+      delete S.deleted[t.id];
+    });
+    S.tasks = restored;
+    S.log = objNums(data.log);
+    sortTasks();
     persist();
     render();
   }
 
   // ---------- интерфейс ----------
+  let view = VIEWS.includes(S.settings.view) ? S.settings.view : 'today';
   let filter = 'all';
   let catFilter = '';
+  let selectedDay = ymd(new Date());
   let editingId = null;
   const openIds = new Set();
 
@@ -682,6 +945,7 @@ dialog h3{font-size:1.02rem;font-weight:600}
   const prioSel = $('#new-prio');
   const repeatSel = $('#new-repeat');
   const catIn = $('#new-cat');
+  const tplSel = $('#new-tpl');
   const previewEl = $('#preview');
   const hintEl = $('#hint');
   const optsEl = $('#options');
@@ -709,9 +973,15 @@ dialog h3{font-size:1.02rem;font-weight:600}
     edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
     trash: '<path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/>',
     chevron: '<path d="m6 9 6 6 6-6"/>',
+    left: '<path d="m15 18-6-6 6-6"/>',
+    right: '<path d="m9 18 6-6-6-6"/>',
     x: '<path d="M18 6 6 18M6 6l12 12"/>',
     repeat: '<path d="m17 1 4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="m7 23-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
     grip: '<g fill="currentColor" stroke="none"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></g>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    list: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    chart: '<path d="M18 20V10M12 20V4M6 20v-6"/>',
     gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'
   };
   function icon(name, size) {
@@ -733,6 +1003,11 @@ dialog h3{font-size:1.02rem;font-weight:600}
 
   $('#open-settings').append(icon('gear', 22));
   $('#settings-close').append(icon('x', 20));
+  document.querySelectorAll('.nav-btn').forEach((b) => {
+    const name = { today: 'sun', all: 'list', week: 'calendar', stats: 'chart' }[b.dataset.view];
+    b.querySelector('.ico').append(icon(name, 22));
+    b.addEventListener('click', () => setView(b.dataset.view));
+  });
 
   function fillSelect(sel, pairs, value) {
     sel.replaceChildren(...pairs.map(([v, label]) => el('option', { value: v, text: label })));
@@ -740,6 +1015,12 @@ dialog h3{font-size:1.02rem;font-weight:600}
   }
   fillSelect(prioSel, PRIORITIES.map((p, i) => [String(i), p]), '0');
   fillSelect(repeatSel, REPEATS, '');
+
+  const plural = (n, f) => {
+    const a = Math.abs(n) % 100, b = a % 10;
+    return a > 10 && a < 20 ? f[2] : b > 1 && b < 5 ? f[1] : b === 1 ? f[0] : f[2];
+  };
+  const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
   function dueLabel(due) {
     const now = new Date();
@@ -769,6 +1050,12 @@ dialog h3{font-size:1.02rem;font-weight:600}
     return HUES[h % HUES.length];
   }
 
+  function mondayOf(d) {
+    const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
+    return x;
+  }
+
   // ---------- порядок и фильтры ----------
   function dueKey(t) { return t.due ? t.due + ' ' + (t.time || '99:99') : '9999'; }
   function cmp(a, b) {
@@ -776,6 +1063,12 @@ dialog h3{font-size:1.02rem;font-weight:600}
     if (S.settings.sort === 'priority' && a.priority !== b.priority) return b.priority - a.priority;
     const ka = dueKey(a), kb = dueKey(b);
     return ka === kb ? 0 : ka < kb ? -1 : 1;
+  }
+  function cmpTime(a, b) {
+    const ka = dueKey(a), kb = dueKey(b);
+    if (ka !== kb) return ka < kb ? -1 : 1;
+    if (a.priority !== b.priority) return b.priority - a.priority;
+    return posSort(a, b);
   }
   function visibleTasks() {
     let v = S.tasks.filter((t) =>
@@ -785,16 +1078,22 @@ dialog h3{font-size:1.02rem;font-weight:600}
     return v;
   }
 
+  // Порядок хранится числом pos: переставленная задача получает число между соседями.
   function reorder(t, target) {
     const vis = visibleTasks();
     const from = vis.indexOf(t);
     if (from < 0) return;
     vis.splice(from, 1);
-    vis.splice(Math.max(0, Math.min(target, vis.length)), 0, t);
-    const set = new Set(vis);
-    const slots = [];
-    S.tasks.forEach((x, i) => { if (set.has(x)) slots.push(i); });
-    vis.forEach((x, k) => { S.tasks[slots[k]] = x; });
+    const to = Math.max(0, Math.min(target, vis.length));
+    const prev = vis[to - 1], next = vis[to];
+    if (prev && next) t.pos = (prev.pos + next.pos) / 2;
+    else if (prev) t.pos = prev.pos + 1;
+    else if (next) t.pos = next.pos - 1;
+    touch(t);
+    sortTasks();
+    const i = S.tasks.indexOf(t);
+    const a = S.tasks[i - 1], b = S.tasks[i + 1];
+    if ((a && t.pos - a.pos < 1e-6) || (b && b.pos - t.pos < 1e-6)) renormalize();
     persist();
     render();
   }
@@ -870,20 +1169,93 @@ dialog h3{font-size:1.02rem;font-weight:600}
     update();
   }
 
+  // Свайп пальцем: вправо отметить, влево удалить.
+  function attachSwipe(li, t) {
+    li.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse' || !e.isPrimary) return;
+      if (e.target.closest('button,input,textarea,select,a,.details')) return;
+      if (e.clientX < 24) return;
+      const row = li.querySelector(':scope > .row');
+      if (!row) return;
+      const id = e.pointerId;
+      const sx = e.clientX, sy = e.clientY;
+      let mode = null, dx = 0, bg = null;
+
+      const cleanup = () => {
+        li.removeEventListener('pointermove', move);
+        li.removeEventListener('pointerup', up);
+        li.removeEventListener('pointercancel', cancel);
+        if (mode === 'h') {
+          row.style.transition = 'transform .2s';
+          row.style.transform = '';
+          setTimeout(() => {
+            if (bg) bg.remove();
+            li.classList.remove('swiping');
+            row.style.transition = '';
+          }, 220);
+        }
+      };
+      const move = (ev) => {
+        if (ev.pointerId !== id) return;
+        const ddx = ev.clientX - sx, ddy = ev.clientY - sy;
+        if (!mode) {
+          if (Math.abs(ddy) > 12 && Math.abs(ddy) > Math.abs(ddx)) { cleanup(); return; }
+          if (Math.abs(ddx) > 12 && Math.abs(ddx) > Math.abs(ddy) * 1.5) {
+            mode = 'h';
+            li.classList.add('swiping');
+            bg = el('div', { class: 'swipe-bg' },
+              el('span', { class: 'sw-l', text: t.done ? 'Вернуть' : 'Выполнено' }),
+              el('span', { class: 'sw-r', text: 'Удалить' }));
+            li.prepend(bg);
+            try { li.setPointerCapture(id); } catch (_) { /* не критично */ }
+          } else return;
+        }
+        dx = ddx;
+        row.style.transition = 'none';
+        row.style.transform = 'translateX(' + dx + 'px)';
+        bg.dataset.dir = dx > 0 ? 'r' : 'l';
+        bg.classList.toggle('armed', Math.abs(dx) >= 90);
+      };
+      const up = (ev) => {
+        if (ev.pointerId !== id) return;
+        const commit = mode === 'h' && Math.abs(dx) >= 90;
+        const right = dx > 0;
+        cleanup();
+        if (commit) { if (right) setDone(t, !t.done); else removeTask(t); }
+      };
+      const cancel = (ev) => { if (ev.pointerId === id) cleanup(); };
+      li.addEventListener('pointermove', move);
+      li.addEventListener('pointerup', up);
+      li.addEventListener('pointercancel', cancel);
+    });
+  }
+
   // ---------- действия ----------
+  function logDone(t, on) {
+    const key = t.id + '@' + ymd(new Date());
+    if (on) S.log[key] = 1; else delete S.log[key];
+  }
+
   function setDone(t, done) {
     if (done && t.repeat) {
       const snap = snapshot();
-      const i = S.tasks.indexOf(t);
-      const copy = norm(Object.assign(JSON.parse(JSON.stringify(t)), { id: newId(), done: true, repeat: '' }));
-      S.tasks.splice(i, 0, copy);
+      const copy = norm(Object.assign(JSON.parse(JSON.stringify(t)), {
+        id: newId(), done: true, repeat: '', doneAt: Date.now(), pos: t.pos - 0.5, updated: Date.now()
+      }));
+      S.tasks.push(copy);
+      logDone(copy, true);
       t.due = nextDue(t.due, t.repeat, new Date());
       t.subtasks.forEach((s) => { s.done = false; });
+      touch(t);
+      sortTasks();
       persist();
       render();
       showToast('Следующий раз: ' + dueLabel(t.due) + (t.time ? ' в ' + t.time : ''), 'Вернуть', () => restore(snap));
     } else {
       t.done = done;
+      t.doneAt = done ? Date.now() : null;
+      logDone(t, done);
+      touch(t);
       persist();
       render();
     }
@@ -893,6 +1265,7 @@ dialog h3{font-size:1.02rem;font-weight:600}
   function removeTask(t) {
     const snap = snapshot();
     S.tasks = S.tasks.filter((x) => x !== t);
+    S.deleted[t.id] = Date.now();
     if (editingId === t.id) editingId = null;
     persist();
     render();
@@ -904,13 +1277,23 @@ dialog h3{font-size:1.02rem;font-weight:600}
     render();
   }
 
-  // ---------- отрисовка ----------
+  function setView(v) {
+    view = v;
+    S.settings.view = v;
+    editingId = null;
+    persistLocal();
+    render();
+    window.scrollTo(0, 0);
+  }
+
+  // ---------- строки ----------
   function detailsPanel(t) {
     const notes = el('textarea', { class: 'notes', rows: '2', placeholder: 'Заметки', 'aria-label': 'Заметки к задаче' });
     notes.value = t.notes;
     let timer = 0;
     notes.addEventListener('input', () => {
       t.notes = notes.value;
+      touch(t);
       clearTimeout(timer);
       timer = setTimeout(persist, 300);
     });
@@ -921,6 +1304,7 @@ dialog h3{font-size:1.02rem;font-weight:600}
       const cb = el('input', { type: 'checkbox', class: 'check sm', 'aria-label': 'Подзадача выполнена: ' + s.text, checked: s.done });
       cb.addEventListener('change', () => {
         s.done = cb.checked;
+        touch(t);
         persist();
         render();
         refocus('[data-sid="' + s.id + '"] .check');
@@ -930,6 +1314,7 @@ dialog h3{font-size:1.02rem;font-weight:600}
         el('span', { class: 'sub-text', text: s.text }),
         iconBtn('x', 'Удалить подзадачу', 'danger sm', () => {
           t.subtasks = t.subtasks.filter((x) => x !== s);
+          touch(t);
           persist();
           render();
         })
@@ -943,12 +1328,43 @@ dialog h3{font-size:1.02rem;font-weight:600}
       const v = add.value.trim();
       if (!v) return;
       t.subtasks.push({ id: newId(), text: v, done: false });
+      touch(t);
       persist();
       render();
       refocus('[data-id="' + t.id + '"] .sub-new');
     });
 
-    return el('div', { class: 'details' }, notes, t.subtasks.length ? subs : null, add);
+    let tpl = null;
+    if (S.templates.length || t.subtasks.length) {
+      const sel = el('select', { 'aria-label': 'Добавить подзадачи из шаблона' });
+      sel.append(el('option', { value: '', text: 'Добавить из шаблона…' }),
+        ...S.templates.map((x) => el('option', { value: x.id, text: x.name })));
+      sel.addEventListener('change', () => {
+        const found = S.templates.find((x) => x.id === sel.value);
+        if (!found) return;
+        found.items.forEach((x) => t.subtasks.push({ id: newId(), text: x, done: false }));
+        touch(t);
+        persist();
+        render();
+      });
+      let save = null;
+      if (t.subtasks.length) {
+        save = el('button', { type: 'button', class: 'linkbtn', text: 'Сохранить подзадачи как шаблон' });
+        save.addEventListener('click', () => {
+          let name = null;
+          try { name = window.prompt('Название шаблона', t.text); } catch (e) { name = null; }
+          if (!name || !name.trim()) return;
+          S.templates.push({ id: newId(), name: name.trim().slice(0, 60), items: t.subtasks.map((s) => s.text) });
+          S.templatesUpdated = Date.now();
+          persist();
+          render();
+          showToast('Шаблон сохранён');
+        });
+      }
+      tpl = el('div', { class: 'tpl-row' }, S.templates.length ? sel : null, save);
+    }
+
+    return el('div', { class: 'details' }, notes, t.subtasks.length ? subs : null, add, tpl);
   }
 
   function viewRow(t, manual) {
@@ -1013,6 +1429,7 @@ dialog h3{font-size:1.02rem;font-weight:600}
     const li = el('li', { class: 'task p' + t.priority + (t.done ? ' done' : '') + (open ? ' open' : ''), 'data-id': t.id },
       row, open ? detailsPanel(t) : null);
     if (handle) handle.addEventListener('pointerdown', (e) => startDrag(e, li, t, handle));
+    attachSwipe(li, t);
     return li;
   }
 
@@ -1043,6 +1460,7 @@ dialog h3{font-size:1.02rem;font-weight:600}
       t.priority = +prio.value;
       t.repeat = rep.value;
       t.category = cat.value.trim().toLowerCase().replace(/^#/, '');
+      touch(t);
       editingId = null;
       persist();
       render();
@@ -1068,13 +1486,35 @@ dialog h3{font-size:1.02rem;font-weight:600}
         el('div', { class: 'edit-actions' }, saveBtn, cancelBtn)));
   }
 
-  function render() {
+  // ---------- отрисовка экранов ----------
+  function sheetWith(tasks) {
+    const ul = el('ul', { class: 'task-list' });
+    tasks.forEach((t) => ul.append(t.id === editingId ? editRow(t) : viewRow(t, false)));
+    return el('div', { class: 'sheet' }, ul);
+  }
+  function emptyCard(msg) { return el('div', { class: 'sheet' }, el('div', { class: 'empty', text: msg })); }
+  function section(title, count, cls) {
+    return el('h3', { class: 'sec-title' + (cls ? ' ' + cls : '') }, title, el('span', { class: 'cnt', text: String(count) }));
+  }
+
+  function renderToday() {
+    const c = $('#view-today');
+    c.replaceChildren();
+    const todayStr = ymd(new Date());
+    const act = S.tasks.filter((t) => !t.done);
+    const over = act.filter(isOverdue).sort(cmpTime);
+    const due = act.filter((t) => t.due === todayStr && !isOverdue(t)).sort(cmpTime);
+    const doneToday = S.tasks.filter((t) => t.done && t.doneAt && ymd(new Date(t.doneAt)) === todayStr);
+    if (over.length) c.append(section('Просрочено', over.length, 'over'), sheetWith(over));
+    c.append(section('Сегодня', due.length),
+      due.length ? sheetWith(due)
+        : emptyCard(over.length ? 'На сегодня больше ничего нет.' : 'На сегодня задач нет. Добавьте задачу выше.'));
+    if (doneToday.length) c.append(section('Сделано сегодня', doneToday.length), sheetWith(doneToday));
+  }
+
+  function renderAllView() {
     const total = S.tasks.length;
     const done = S.tasks.filter((t) => t.done).length;
-
-    $('#progress-text').textContent = total ? 'Выполнено ' + done + ' из ' + total : 'Задач пока нет';
-    $('#bar').style.width = total ? (done / total * 100) + '%' : '0%';
-
     const cats = [...new Set(S.tasks.map((t) => t.category).filter(Boolean))].sort();
     if (catFilter && !cats.includes(catFilter)) catFilter = '';
     catFilterSel.replaceChildren(
@@ -1082,7 +1522,6 @@ dialog h3{font-size:1.02rem;font-weight:600}
       ...cats.map((c) => el('option', { value: c, text: '#' + c })));
     catFilterSel.value = catFilter;
     catFilterSel.hidden = !cats.length;
-    catsList.replaceChildren(...cats.map((c) => el('option', { value: c })));
     sortSel.value = S.settings.sort;
 
     document.querySelectorAll('[data-filter]').forEach((b) => {
@@ -1105,12 +1544,186 @@ dialog h3{font-size:1.02rem;font-weight:600}
       return;
     }
     visible.forEach((t) => listEl.append(t.id === editingId ? editRow(t) : viewRow(t, manual)));
+  }
 
+  function renderWeek() {
+    const c = $('#view-week');
+    c.replaceChildren();
+    const todayStr = ymd(new Date());
+    const sel = parseYmd(selectedDay);
+    const start = mondayOf(sel);
+    const end = addDays(start, 6);
+    const fmt = (d, o) => d.toLocaleDateString('ru-RU', o);
+
+    c.append(el('div', { class: 'weekbar' },
+      iconBtn('left', 'Предыдущая неделя', '', () => { selectedDay = ymd(addDays(sel, -7)); render(); }),
+      el('span', { class: 'range', text: fmt(start, { day: 'numeric', month: 'long' }) + ' – ' + fmt(end, { day: 'numeric', month: 'long' }) }),
+      iconBtn('right', 'Следующая неделя', '', () => { selectedDay = ymd(addDays(sel, 7)); render(); })));
+
+    const days = el('div', { class: 'days', role: 'group', 'aria-label': 'Дни недели' });
+    for (let i = 0; i < 7; i++) {
+      const d = addDays(start, i);
+      const key = ymd(d);
+      const n = S.tasks.filter((t) => !t.done && t.due === key).length;
+      const b = el('button', {
+        type: 'button',
+        class: 'day' + (key === todayStr ? ' today' : ''),
+        'aria-pressed': String(key === selectedDay),
+        'aria-label': fmt(d, { weekday: 'long', day: 'numeric', month: 'long' }) + (n ? ', задач: ' + n : '')
+      },
+      el('span', { class: 'dn', text: fmt(d, { weekday: 'short' }) }),
+      el('span', { class: 'dd', text: String(d.getDate()) }),
+      el('span', { class: 'dc', text: n ? String(n) : '' }));
+      b.addEventListener('click', () => { selectedDay = key; render(); });
+      days.append(b);
+    }
+    c.append(days);
+
+    if (selectedDay !== todayStr) {
+      const back = el('button', { type: 'button', class: 'linkbtn', text: 'Вернуться к сегодняшнему дню' });
+      back.addEventListener('click', () => { selectedDay = todayStr; render(); });
+      c.append(el('div', { class: 'back-row' }, back));
+    } else {
+      const over = S.tasks.filter(isOverdue).sort(cmpTime);
+      if (over.length) c.append(section('Просрочено', over.length, 'over'), sheetWith(over));
+    }
+
+    const dayTasks = S.tasks.filter((t) => t.due === selectedDay)
+      .sort((a, b) => (a.done !== b.done ? (a.done ? 1 : -1) : cmpTime(a, b)));
+    c.append(section(cap(fmt(sel, { weekday: 'long', day: 'numeric', month: 'long' })), dayTasks.length),
+      dayTasks.length ? sheetWith(dayTasks) : emptyCard('На этот день задач нет.'));
+  }
+
+  function renderStats() {
+    const c = $('#view-stats');
+    c.replaceChildren();
+    const by = {};
+    Object.keys(S.log).forEach((k) => {
+      const d = k.split('@')[1];
+      if (d) by[d] = (by[d] || 0) + 1;
+    });
+    const today = new Date();
+    let streak = 0;
+    let d = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    if (!by[ymd(d)]) d = addDays(d, -1);
+    while (by[ymd(d)]) { streak++; d = addDays(d, -1); }
+
+    const ws = mondayOf(today);
+    let thisW = 0, lastW = 0;
+    for (let i = 0; i < 7; i++) {
+      thisW += by[ymd(addDays(ws, i))] || 0;
+      lastW += by[ymd(addDays(ws, i - 7))] || 0;
+    }
+    const total = Object.keys(S.log).length;
+    const active = S.tasks.filter((t) => !t.done);
+    const over = active.filter(isOverdue).length;
+
+    const stat = (v, l, sub) => el('div', { class: 'sheet stat' },
+      el('div', { class: 'v', text: String(v) }), el('div', { class: 'l', text: l }),
+      sub ? el('div', { class: 'd', text: sub }) : null);
+    c.append(el('div', { class: 'stats' },
+      stat(streak, plural(streak, ['день подряд', 'дня подряд', 'дней подряд'])),
+      stat(thisW, 'за эту неделю', 'на прошлой: ' + lastW),
+      stat(total, 'выполнено всего'),
+      stat(active.length, 'в работе', 'просрочено: ' + over)));
+
+    c.append(section('Последние 14 дней', ''));
+    const counts = [];
+    for (let i = 13; i >= 0; i--) counts.push({ date: addDays(today, -i), n: by[ymd(addDays(today, -i))] || 0 });
+    const max = Math.max(1, ...counts.map((x) => x.n));
+    const chart = el('div', { class: 'chart', role: 'img', 'aria-label': 'Выполнено задач по дням за две недели' });
+    counts.forEach((x) => {
+      const h = x.n ? Math.max(6, Math.round(80 * x.n / max)) : 3;
+      chart.append(el('div', { class: 'bar-col' + (ymd(x.date) === ymd(today) ? ' today' : '') },
+        el('div', { class: 'n', text: x.n ? String(x.n) : '' }),
+        el('div', { class: 'b' + (x.n ? '' : ' zero'), style: 'height:' + h + 'px' }),
+        el('div', { class: 'w', text: x.date.toLocaleDateString('ru-RU', { weekday: 'short' }).slice(0, 2) })));
+    });
+    const card = el('div', { class: 'sheet' }, chart);
+    if (!total) card.append(el('p', { class: 'hint chart-note', text: 'Здесь появится статистика после первых выполненных задач.' }));
+    c.append(card);
+  }
+
+  function updateProgress() {
+    const todayStr = ymd(new Date());
+    let done, total, text;
+    if (view === 'all') {
+      total = S.tasks.length;
+      done = S.tasks.filter((t) => t.done).length;
+      text = total ? 'Выполнено ' + done + ' из ' + total : 'Задач пока нет';
+    } else {
+      const left = S.tasks.filter((t) => !t.done && t.due && t.due <= todayStr).length;
+      done = S.tasks.filter((t) => t.done && t.doneAt && ymd(new Date(t.doneAt)) === todayStr).length;
+      total = left + done;
+      text = total ? 'Сегодня выполнено ' + done + ' из ' + total : 'На сегодня задач нет';
+    }
+    $('#progress-text').textContent = text;
+    $('#bar').style.width = total ? (done / total * 100) + '%' : '0%';
+  }
+
+  function badgeCount() {
+    const todayStr = ymd(new Date());
+    return S.tasks.filter((t) => !t.done && t.due && t.due <= todayStr).length;
+  }
+  function updateBadge() {
+    const n = badgeCount();
+    document.title = (n ? '(' + n + ') ' : '') + 'Планировщик задач';
+    const b = $('.nav-btn[data-view="today"] .badge');
+    b.textContent = n > 99 ? '99+' : String(n);
+    b.hidden = !n;
+    try {
+      if (S.settings.badge && n && 'setAppBadge' in navigator) {
+        const p = navigator.setAppBadge(n);
+        if (p && p.catch) p.catch(() => {});
+      } else if ('clearAppBadge' in navigator) {
+        const p = navigator.clearAppBadge();
+        if (p && p.catch) p.catch(() => {});
+      }
+    } catch (e) { /* не поддерживается */ }
+  }
+
+  function refreshFormLists() {
+    const cats = [...new Set(S.tasks.map((t) => t.category).filter(Boolean))].sort();
+    catsList.replaceChildren(...cats.map((c) => el('option', { value: c })));
+    const cur = tplSel.value;
+    fillSelect(tplSel, [['', 'Без шаблона']].concat(S.templates.map((x) => [x.id, x.name])), '');
+    if (S.templates.some((x) => x.id === cur)) tplSel.value = cur;
+  }
+
+  function render() {
+    document.querySelectorAll('.nav-btn').forEach((b) => {
+      if (b.dataset.view === view) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+    VIEWS.forEach((v) => { $('#view-' + v).hidden = v !== view; });
+    updateProgress();
+    if (view === 'today') renderToday();
+    else if (view === 'all') renderAllView();
+    else if (view === 'week') renderWeek();
+    else renderStats();
+    refreshFormLists();
+    updateBadge();
+    updatePreview();
     if (editingId) {
-      const i = listEl.querySelector('.edit-text');
+      const i = document.querySelector('#view-' + view + ' .edit-text');
       if (i) { i.focus(); i.setSelectionRange(i.value.length, i.value.length); }
     }
   }
+
+  // Не перерисовываем экран, пока человек печатает в поле внутри списка.
+  let pendingRender = false;
+  function typingInView() {
+    const a = document.activeElement;
+    return !!(a && a.closest && a.closest('.view') && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
+  }
+  function safeRender() {
+    if (typingInView()) pendingRender = true; else render();
+  }
+  document.addEventListener('focusout', () => {
+    if (!pendingRender) return;
+    setTimeout(() => {
+      if (pendingRender && !typingInView()) { pendingRender = false; render(); }
+    }, 250);
+  });
 
   function renderHeaderDate() {
     const now = new Date();
@@ -1191,7 +1804,7 @@ dialog h3{font-size:1.02rem;font-weight:600}
       }
     });
     if (!fired.length) return;
-    persist();
+    persistLocal();
     if (fired.length === 1) {
       const t = fired[0];
       const when = dueLabel(t.due) + (t.time ? ' в ' + t.time : '');
@@ -1204,14 +1817,46 @@ dialog h3{font-size:1.02rem;font-weight:600}
     }
   }
 
-  // ---------- форма добавления ----------
+  // ---------- добавление ----------
+  function defaultDue() {
+    if (view === 'today') return ymd(new Date());
+    if (view === 'week') return selectedDay;
+    return null;
+  }
+
+  function buildTask(raw, o) {
+    const now = new Date();
+    const p = parseSmart(raw, now);
+    let due = o.date || p.due;
+    let tm = o.time || p.time;
+    if (!due && o.defaultDue) due = o.defaultDue;
+    if (tm && !due) due = dueForTime(tm, now);
+    if (!due) tm = null;
+    const tpl = o.tpl ? S.templates.find((x) => x.id === o.tpl) : null;
+    return norm({
+      id: newId(),
+      text: p.text || raw,
+      due,
+      time: tm,
+      priority: +o.prio || p.priority,
+      repeat: o.repeat || p.repeat,
+      category: o.cat || p.category,
+      notes: '',
+      subtasks: tpl ? tpl.items.map((x) => ({ id: newId(), text: x, done: false })) : [],
+      done: false,
+      pos: nextPos(),
+      updated: Date.now()
+    });
+  }
+
   function updatePreview() {
     const raw = textIn.value.trim();
     previewEl.replaceChildren();
     if (!raw) { previewEl.hidden = true; hintEl.hidden = false; return; }
     const p = parseSmart(raw, new Date());
+    const due = dateIn.value || p.due || defaultDue();
     const chips = [];
-    if (p.due) chips.push('Срок: ' + dueLabel(p.due) + (p.time ? ' в ' + p.time : ''));
+    if (due) chips.push('Срок: ' + dueLabel(due) + ((timeIn.value || p.time) ? ' в ' + (timeIn.value || p.time) : ''));
     if (p.repeat) chips.push('Повтор: ' + REPEAT_SHORT[p.repeat]);
     if (p.priority) chips.push('Приоритет: ' + PRIORITIES[p.priority].toLowerCase());
     if (p.category) chips.push('#' + p.category);
@@ -1220,6 +1865,7 @@ dialog h3{font-size:1.02rem;font-weight:600}
     hintEl.hidden = true;
   }
   textIn.addEventListener('input', updatePreview);
+  [dateIn, timeIn].forEach((n) => n.addEventListener('change', updatePreview));
 
   optsToggle.addEventListener('click', () => {
     const open = optsEl.hidden;
@@ -1231,25 +1877,12 @@ dialog h3{font-size:1.02rem;font-weight:600}
     e.preventDefault();
     const raw = textIn.value.trim();
     if (!raw) { textIn.focus(); return; }
-    const now = new Date();
-    const p = parseSmart(raw, now);
-    let due = dateIn.value || p.due;
-    let tm = timeIn.value || p.time;
-    if (tm && !due) due = dueForTime(tm, now);
-    if (!due) tm = null;
-    const task = norm({
-      id: newId(),
-      text: p.text || raw,
-      due,
-      time: tm,
-      priority: +prioSel.value || p.priority,
-      repeat: repeatSel.value || p.repeat,
-      category: catIn.value || p.category,
-      notes: '',
-      subtasks: [],
-      done: false
+    const task = buildTask(raw, {
+      date: dateIn.value, time: timeIn.value, prio: prioSel.value, repeat: repeatSel.value,
+      cat: catIn.value, tpl: tplSel.value, defaultDue: defaultDue()
     });
     S.tasks.push(task);
+    sortTasks();
     persist();
     textIn.value = '';
     dateIn.value = '';
@@ -1257,7 +1890,7 @@ dialog h3{font-size:1.02rem;font-weight:600}
     prioSel.value = '0';
     repeatSel.value = '';
     catIn.value = '';
-    updatePreview();
+    tplSel.value = '';
     render();
     textIn.focus();
   });
@@ -1271,14 +1904,184 @@ dialog h3{font-size:1.02rem;font-weight:600}
     });
   });
   catFilterSel.addEventListener('change', () => { catFilter = catFilterSel.value; editingId = null; render(); });
-  sortSel.addEventListener('change', () => { S.settings.sort = sortSel.value; persist(); render(); });
+  sortSel.addEventListener('change', () => { S.settings.sort = sortSel.value; persistLocal(); render(); });
   $('#clear').addEventListener('click', () => {
     const snap = snapshot();
-    const count = S.tasks.filter((t) => t.done).length;
+    const now = Date.now();
+    const gone = S.tasks.filter((t) => t.done);
+    gone.forEach((t) => { S.deleted[t.id] = now; });
     S.tasks = S.tasks.filter((t) => !t.done);
     persist();
     render();
-    showToast('Удалено выполненных: ' + count, 'Вернуть', () => restore(snap));
+    showToast('Удалено выполненных: ' + gone.length, 'Вернуть', () => restore(snap));
+  });
+
+  // ---------- синхронизация ----------
+  const sync = { busy: false, again: false, timer: 0, state: 'idle', msg: '' };
+  const syncEnabled = () => !!(S.sync.token && S.sync.gistId);
+  const syncErr = (code) => Object.assign(new Error(code), { code });
+
+  function scheduleSync(delay) {
+    if (!syncEnabled()) return;
+    clearTimeout(sync.timer);
+    sync.timer = setTimeout(runSync, delay == null ? 3000 : delay);
+  }
+
+  function gh(path, opts) {
+    const o = Object.assign({ cache: 'no-store' }, opts || {});
+    o.headers = Object.assign(
+      { Accept: 'application/vnd.github+json', Authorization: 'Bearer ' + S.sync.token },
+      o.body ? { 'Content-Type': 'application/json' } : {});
+    return fetch('https://api.github.com' + path, o);
+  }
+
+  const localData = () => ({
+    tasks: S.tasks, deleted: S.deleted, log: S.log, templates: S.templates, templatesUpdated: S.templatesUpdated
+  });
+  const emptyData = () => ({ tasks: [], deleted: {}, log: {}, templates: null, templatesUpdated: 0 });
+
+  function normalizeData(d) {
+    return {
+      tasks: (Array.isArray(d.tasks) ? d.tasks : []).map(norm).filter(Boolean),
+      deleted: objNums(d.deleted),
+      log: objNums(d.log),
+      templates: Array.isArray(d.templates) ? d.templates.map(normTpl).filter(Boolean) : null,
+      templatesUpdated: num(d.templatesUpdated) || 0
+    };
+  }
+
+  async function fetchRemote() {
+    const r = await gh('/gists/' + S.sync.gistId);
+    if (r.status === 404) throw syncErr('missing');
+    if (r.status === 401) throw syncErr('auth');
+    if (!r.ok) throw syncErr('http' + r.status);
+    const g = await r.json();
+    const f = g.files && g.files[SYNC_FILE];
+    if (!f) return null;
+    let text = f.content;
+    if (f.truncated || text == null) text = await (await fetch(f.raw_url, { cache: 'no-store' })).text();
+    let data;
+    try { data = JSON.parse(text); } catch (e) { return null; }
+    return normalizeData(data);
+  }
+
+  function syncMessage(e) {
+    const c = (e && e.code) || '';
+    if (c === 'auth') return 'Токен не подошёл. Отключите синхронизацию и подключите заново.';
+    if (c === 'scope') return 'У токена нет права gist.';
+    if (c === 'missing') return 'Хранилище на GitHub не найдено. Отключите синхронизацию и подключите заново.';
+    if (c.startsWith('http')) return 'GitHub ответил ошибкой ' + c.slice(4) + '.';
+    return 'Нет связи. Повторю позже.';
+  }
+
+  function updateSyncUI() {
+    const on = syncEnabled();
+    $('#sync-off').hidden = on;
+    $('#sync-on').hidden = !on;
+    const st = $('#sync-status');
+    st.classList.toggle('err', sync.state === 'error');
+    if (sync.state === 'busy') st.textContent = 'Синхронизация…';
+    else if (sync.state === 'error') st.textContent = sync.msg;
+    else if (S.sync.last) st.textContent = 'Синхронизировано в ' + new Date(S.sync.last).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+    else st.textContent = 'Подключено';
+  }
+
+  async function runSync() {
+    if (!syncEnabled()) return;
+    if (sync.busy) { sync.again = true; return; }
+    if (typeof navigator.onLine === 'boolean' && !navigator.onLine) {
+      sync.state = 'error'; sync.msg = 'Нет сети. Повторю позже.'; updateSyncUI();
+      return;
+    }
+    sync.busy = true;
+    sync.state = 'busy';
+    updateSyncUI();
+    try {
+      const remote = await fetchRemote();
+      const merged = mergeSync(localData(), remote || emptyData());
+      const changed = serializeData(localData()) !== serializeData(merged);
+      S.tasks = merged.tasks;
+      S.deleted = merged.deleted;
+      S.log = merged.log;
+      S.templates = merged.templates;
+      S.templatesUpdated = merged.templatesUpdated;
+      prune();
+      const same = remote && serializeData(mergeSync(remote, emptyData())) === serializeData(merged);
+      if (!same) {
+        const r = await gh('/gists/' + S.sync.gistId, {
+          method: 'PATCH',
+          body: JSON.stringify({ files: { [SYNC_FILE]: { content: serializeData(merged) } } })
+        });
+        if (r.status === 401) throw syncErr('auth');
+        if (r.status === 404) throw syncErr('missing');
+        if (!r.ok) throw syncErr('http' + r.status);
+      }
+      S.sync.last = Date.now();
+      persistLocal();
+      sync.state = 'ok';
+      if (changed) safeRender();
+    } catch (e) {
+      sync.state = 'error';
+      sync.msg = syncMessage(e);
+    } finally {
+      sync.busy = false;
+      updateSyncUI();
+      if (sync.again) { sync.again = false; scheduleSync(500); }
+    }
+  }
+
+  async function connectSync() {
+    const token = $('#sync-token').value.trim();
+    if (!token) { showToast('Вставьте токен'); return; }
+    const btn = $('#sync-connect');
+    btn.disabled = true;
+    const prev = S.sync.token;
+    S.sync.token = token;
+    try {
+      let r = await gh('/user');
+      if (r.status === 401) throw syncErr('auth');
+      if (!r.ok) throw syncErr('http' + r.status);
+      let gistId = '';
+      for (let page = 1; page <= 5 && !gistId; page++) {
+        r = await gh('/gists?per_page=100&page=' + page);
+        if (!r.ok) throw syncErr('http' + r.status);
+        const list = await r.json();
+        const found = list.find((g) => g.files && g.files[SYNC_FILE]);
+        if (found) gistId = found.id;
+        if (list.length < 100) break;
+      }
+      if (!gistId) {
+        r = await gh('/gists', {
+          method: 'POST',
+          body: JSON.stringify({ description: 'Planner sync data', public: false, files: { [SYNC_FILE]: { content: serializeData(localData()) } } })
+        });
+        if (r.status === 404 || r.status === 403) throw syncErr('scope');
+        if (!r.ok) throw syncErr('http' + r.status);
+        gistId = (await r.json()).id;
+      }
+      S.sync.gistId = gistId;
+      persistLocal();
+      $('#sync-token').value = '';
+      sync.state = 'idle';
+      updateSyncUI();
+      await runSync();
+    } catch (e) {
+      S.sync.token = prev;
+      showToast(syncMessage(e));
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  $('#sync-connect').addEventListener('click', connectSync);
+  $('#sync-token').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); connectSync(); } });
+  $('#sync-now').addEventListener('click', () => runSync());
+  $('#sync-disconnect').addEventListener('click', () => {
+    S.sync = { token: '', gistId: '', last: 0 };
+    sync.state = 'idle';
+    persistLocal();
+    updateSyncUI();
+    showToast('Синхронизация отключена. Задачи остались на этом устройстве.');
   });
 
   // ---------- настройки ----------
@@ -1298,10 +2101,36 @@ dialog h3{font-size:1.02rem;font-weight:600}
     notifStatus.textContent = p === 'granted' ? 'Уведомления разрешены'
       : p === 'denied' ? 'Запрещены в настройках браузера' : '';
   }
+
+  function renderTplList() {
+    const box = $('#tpl-list');
+    box.replaceChildren();
+    if (!S.templates.length) { box.append(el('p', { class: 'hint', text: 'Шаблонов пока нет.' })); return; }
+    S.templates.forEach((x) => {
+      box.append(el('div', { class: 'tpl-item' },
+        el('span', { text: x.name + ' (' + x.items.length + ')' }),
+        iconBtn('trash', 'Удалить шаблон ' + x.name, 'danger sm', () => {
+          S.templates = S.templates.filter((y) => y !== x);
+          S.templatesUpdated = Date.now();
+          persist();
+          renderTplList();
+          refreshFormLists();
+        })));
+    });
+  }
+
+  function addLinkBase() {
+    return location.origin + location.pathname.replace(/index\.html$/, '') + '?add=';
+  }
+
   function openSettings() {
     $('#set-reminders').checked = S.settings.reminders;
     $('#set-default-time').value = S.settings.defaultTime || '';
+    $('#set-badge').checked = S.settings.badge;
+    $('#add-link').value = addLinkBase();
     updateNotifUI();
+    updateSyncUI();
+    renderTplList();
     if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', '');
   }
   function closeSettings() {
@@ -1310,11 +2139,24 @@ dialog h3{font-size:1.02rem;font-weight:600}
   $('#open-settings').addEventListener('click', openSettings);
   $('#settings-close').addEventListener('click', closeSettings);
   dlg.addEventListener('click', (e) => { if (e.target === dlg) closeSettings(); });
-  $('#set-reminders').addEventListener('change', (e) => { S.settings.reminders = e.target.checked; persist(); });
-  $('#set-default-time').addEventListener('change', (e) => { S.settings.defaultTime = e.target.value || ''; persist(); });
+  $('#set-reminders').addEventListener('change', (e) => { S.settings.reminders = e.target.checked; persistLocal(); });
+  $('#set-default-time').addEventListener('change', (e) => { S.settings.defaultTime = e.target.value || ''; persistLocal(); });
+  $('#set-badge').addEventListener('change', (e) => { S.settings.badge = e.target.checked; persistLocal(); updateBadge(); });
   notifBtn.addEventListener('click', async () => {
     try { await Notification.requestPermission(); } catch (e) { /* пользователь отказался */ }
     updateNotifUI();
+  });
+  $('#add-link').addEventListener('focus', (e) => e.target.select());
+  $('#copy-link').addEventListener('click', async () => {
+    const text = $('#add-link').value;
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('Ссылка скопирована');
+    } catch (e) {
+      $('#add-link').focus();
+      $('#add-link').select();
+      showToast('Выделите ссылку и скопируйте её вручную');
+    }
   });
 
   let deferredPrompt = null;
@@ -1334,9 +2176,10 @@ dialog h3{font-size:1.02rem;font-weight:600}
   async function exportData() {
     const payload = {
       app: 'planner',
-      version: 2,
+      version: 3,
       exportedAt: new Date().toISOString(),
       tasks: S.tasks,
+      templates: S.templates,
       settings: { reminders: S.settings.reminders, defaultTime: S.settings.defaultTime, sort: S.settings.sort }
     };
     const name = 'planner-' + ymd(new Date()) + '.json';
@@ -1365,16 +2208,25 @@ dialog h3{font-size:1.02rem;font-weight:600}
       if (!list) throw new Error('format');
       const imported = list.map(norm).filter(Boolean);
       const snap = snapshot();
+      const now = Date.now();
       let msg;
       if ($('#import-replace').checked) {
+        const keep = new Set(imported.map((t) => t.id));
+        S.tasks.forEach((t) => { if (!keep.has(t.id)) S.deleted[t.id] = now; });
+        imported.forEach((t, i) => { t.pos = i + 1; t.updated = now; delete S.deleted[t.id]; });
         S.tasks = imported;
+        if (!Array.isArray(data) && Array.isArray(data.templates)) {
+          S.templates = data.templates.map(normTpl).filter(Boolean);
+          S.templatesUpdated = now;
+        }
         msg = 'Загружено задач: ' + imported.length;
       } else {
         const ids = new Set(S.tasks.map((t) => t.id));
         const added = imported.filter((t) => !ids.has(t.id));
-        S.tasks = S.tasks.concat(added);
+        added.forEach((t) => { t.pos = nextPos(); t.updated = now; S.tasks.push(t); });
         msg = 'Добавлено задач: ' + added.length;
       }
+      sortTasks();
       persist();
       render();
       closeSettings();
@@ -1385,21 +2237,55 @@ dialog h3{font-size:1.02rem;font-weight:600}
   });
 
   // ---------- запуск ----------
+  prune();
+  persistLocal();
   renderHeaderDate();
   render();
-  updatePreview();
+
+  (function handleUrlActions() {
+    const qp = new URLSearchParams(location.search);
+    const add = qp.get('add');
+    const isNew = qp.has('new');
+    if (!add && !isNew) return;
+    try { history.replaceState(null, '', location.pathname + location.hash); } catch (e) { /* не критично */ }
+    if (add && add.trim()) {
+      const t = buildTask(add.trim().slice(0, 300), { defaultDue: null });
+      S.tasks.push(t);
+      sortTasks();
+      persist();
+      render();
+      showToast('Добавлено: ' + t.text);
+      scheduleSync(300);
+    } else if (isNew) {
+      textIn.focus();
+    }
+  })();
+
   checkReminders();
+  scheduleSync(800);
+  setInterval(() => {
+    checkReminders();
+    updateBadge();
+    if (document.visibilityState === 'visible' && syncEnabled()) scheduleSync(0);
+  }, 60000);
   setInterval(checkReminders, 20000);
+  window.addEventListener('online', () => scheduleSync(500));
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
     renderHeaderDate();
     checkReminders();
-    const a = document.activeElement;
-    const typing = a && listEl.contains(a) && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName);
-    if (!editingId && !typing) render();
+    scheduleSync(300);
+    if (!editingId && !typingInView()) render();
   });
 
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    const hadController = !!navigator.serviceWorker.controller;
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController || reloaded || typingInView()) return;
+      reloaded = true;
+      location.reload();
+    });
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').catch(() => { /* офлайн-режим недоступен */ });
     });
